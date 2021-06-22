@@ -10,21 +10,6 @@ namespace NiklasGame
 
         void Update(GameTime gameTime);
     }
-
-    public class RevertingLinearAnimation : IAnimation
-    {
-        public int TotalMilliseconds;
-        public Action<float> Action;
-        public float Position { get; internal set; }
-
-        public void Update(GameTime gameTime)
-        {
-        }
-
-        private float accumulatedTime;
-
-        public bool IsDone { get; internal set; }
-    }
     
     public class Cubic
     {		
@@ -61,7 +46,7 @@ namespace NiklasGame
         public Action<float> Action;
         public float Position { get; internal set; }
 
-        private float accumulatedTime;
+        private float _accumulatedTime;
 
         public bool IsDone { get; internal set; }
 
@@ -80,15 +65,15 @@ namespace NiklasGame
 
         public virtual float GetUpdatePosition(GameTime gameTime)
         {
-            accumulatedTime += gameTime.ElapsedGameTime.Milliseconds;
+            _accumulatedTime += gameTime.ElapsedGameTime.Milliseconds;
 
-            if (accumulatedTime > TotalMilliseconds)
+            if (_accumulatedTime > TotalMilliseconds)
             {
                 IsDone = true;
                 return 1f;
             }
 
-            return accumulatedTime / (float) TotalMilliseconds;
+            return _accumulatedTime / (float) TotalMilliseconds;
         }
     }
 }

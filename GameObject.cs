@@ -8,6 +8,15 @@ using Microsoft.Xna.Framework.Input;
 
 namespace NiklasGame
 {
+    public class Timer
+    {
+        public int Duration;
+        public int? Added;
+        public bool IsDone;
+        public Func<int, bool> Action;
+        public int Count { get; set; }
+    }
+    
     public class GameObject
     {
         public Vector2 Position;
@@ -16,7 +25,7 @@ namespace NiklasGame
         public Rectangle Bounds;
         internal bool ShouldBeDeleted;
         internal List<IAnimation> Animations = new();
-
+        internal List<Timer> Timers = new();
         public float Speed { get; set; } = 1;
 
         public virtual void Initialize()
@@ -33,9 +42,44 @@ namespace NiklasGame
             Animations.Add(new LinearAnimation(ms, action));
         }
 
+        public void AddTimer(int ms, Func<int,bool> onFire)
+        {
+            Timers.Add(new Timer()
+            {
+                Duration = ms,
+                Count = 0,
+                Action = onFire
+            });
+        }
+
         public virtual void Update(GameTime gameTime)
         {
             Position += Direction * Speed * (float)gameTime.ElapsedGameTime.Milliseconds;
+            HandleAnimations(gameTime);
+            var ms = gameTime.TotalGameTime.Milliseconds;
+            foreach (var timer in Timers)
+            {
+                if (!timer.Added.HasValue)
+                {
+                    timer.Added = ms;
+                }
+                else
+                {
+                    var count = (timer.Added.Value - ms) / timer.Duration;
+                    if (count > timer.Count)
+                    {
+                        timer.IsDone = timer.Action(count);
+                    }
+
+                    timer.Count = count;
+                }
+            }
+
+            Timers.RemoveAll(d => d.IsDone);
+        }
+
+        private void HandleAnimations(GameTime gameTime)
+        {
             foreach (var animation in Animations)
             {
                 animation.Update(gameTime);

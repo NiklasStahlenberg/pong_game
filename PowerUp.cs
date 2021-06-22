@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -7,8 +8,11 @@ namespace NiklasGame
 {
     public class PowerUp: GameObject
     {
-        public PowerUp(params GameObject[] gameObjects)
+        private readonly Action<Pad> _action;
+
+        public PowerUp(Action<Pad> action, params GameObject[] gameObjects)
         {
+            _action = action;
             Bounds = new Rectangle(-8, -8, 16, 16);
             var selectedPlayer = gameObjects[RandomHelper.GetNext(0, gameObjects.Length)];
             var plane = selectedPlayer.Position.X;
@@ -32,7 +36,7 @@ namespace NiklasGame
         {
             if (collidesWith is Pad pup)
             {
-                pup.IncreaseSize();
+                _action(pup);
                 MarkForDeletion();
             }
             base.OnCollision(collidesWith);

@@ -9,11 +9,12 @@ namespace NiklasGame
     {
         public Keys KeyUp { get; set; } = Keys.W;
         public Keys KeyDown { get; set; } = Keys.S;
-
+        
+        public Vector2 Dump { get; set; } = new Vector2(0.8f, 0.8f);
         public float RestitutionCoefficient { get; internal set; }
 
         private const int InitialHeight = 100;
-        private int additionalHeight = 0;
+        private int _additionalHeight;
 
         private const float PowerupSize = 15;
 
@@ -26,8 +27,8 @@ namespace NiklasGame
         {
             Bounds = new Rectangle(-5, -InitialHeight / 2, 10, InitialHeight);
             Animations.Clear();
-            additionalHeight = 0;
-            RestitutionCoefficient = 0.8f;
+            _additionalHeight = 0;
+            RestitutionCoefficient = 1.05f;
         }
 
         public override void Initialize()
@@ -43,10 +44,7 @@ namespace NiklasGame
             UpdateBounds();
             GetDirectionInput(gameTime);
             
-            
             base.Update(gameTime);
-            HandleOutOfBounds(GetWorldBounds());
-
         }
 
         private void HandleOutOfBounds(Rectangle rect)
@@ -65,21 +63,26 @@ namespace NiklasGame
 
         private void UpdateBounds()
         {
+
+            _additionalHeight = (int)GetPowerupSize();
+
+            if (_additionalHeight != 0)
+            {
+                Bounds.Height = InitialHeight + _additionalHeight;
+            }
+        }
+
+        private double GetPowerupSize()
+        {
             double powerupSize = 0;
             foreach (var animation in Animations)
             {
                 powerupSize += PowerupSize * Math.Sin(animation.Position * Math.PI);
             }
-
-            additionalHeight = (int)powerupSize;
-
-            if (additionalHeight != 0)
-            {
-                Bounds.Height = InitialHeight + additionalHeight;
-            }
+            return powerupSize;
         }
 
-        public override Rectangle GetWorldBounds() => Bounds.WithPosition(Position, 0, (int)(-additionalHeight / 2d));
+        public override Rectangle GetWorldBounds() => Bounds.WithPosition(Position, 0, (int)(-_additionalHeight / 2d));
 
         private const float KeySpeedStep = 0.02f;
         private void GetDirectionInput(GameTime gameTime)
@@ -111,18 +114,25 @@ namespace NiklasGame
             Animate(new EaseAnimation(5000, (_) => { }));
         }
 
+        public void MorePower()
+        {
+            RestitutionCoefficient += 0.8f;
+            AddTimer(5000, (_) =>
+            {
+                RestitutionCoefficient -= 0.8f;
+                return true;
+            });
+        }
+
         public override void OnCollision(GameObject collidesWith)
         {
-            // if (collidesWith is Edge edge)
-            // {
-            //     switch (edge.EdgeSide)dot
-            //     {
-            //         case Edge.Side.Top:
-            //         case Edge.Side.Bottom:
-            //             Direction.Y = 0;
-            //             break;
-            //     }
-            // }
+            if (collidesWith is Edge edge)
+            {
+                Direction*= Dump;
+                
+                HandleOutOfBounds(GetWorldBounds());
+            }
         }
+        
     }
 }
