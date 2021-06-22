@@ -126,7 +126,7 @@ namespace NiklasGame
 
         public override void OnCollision(GameObject collidesWith)
         {
-            if (collidesWith is Edge edge)
+            if (collidesWith is Edge)
             {
                 Direction*= Dump;
                 

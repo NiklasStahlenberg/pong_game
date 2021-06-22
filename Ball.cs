@@ -12,9 +12,8 @@ namespace NiklasGame
         private readonly Scoreboard _scoreboard;
         private readonly Vector2 _initialPosition;
         private const float InitialSpeed = 0.25f;
-
-        public int Size { get; set; } = 20;
-
+        private const int initialSize = 18;
+        
         public override void Initialize()
         {
            
@@ -30,9 +29,14 @@ namespace NiklasGame
             var randomNumber = Environment.TickCount % 2 - 1;
             this._scoreboard = scoreboard;
             this._initialPosition = initialPosition;
-            var half = Size / 2;
-            Bounds = new Rectangle(half, half, Size, Size);
+            SetBoundsFromSize(initialSize);
             Reset(randomNumber == 0 ? -1 : 1);
+        }
+
+        private void SetBoundsFromSize(int size)
+        {
+            var half = size / 2;
+            Bounds = new Rectangle(half, half, size, size);
         }
 
         public override void OnCollision(GameObject collidesWith)
@@ -53,6 +57,11 @@ namespace NiklasGame
                         Reset(-Direction.X);
                         break;
                 }
+            }
+            else if (collidesWith is PowerUp pup)
+            {
+                var s = Bounds.Width;
+                Animate(500, p=>SetBoundsFromSize((int)(p*10f)+s));
             }
             else if (collidesWith is Pad pad)
             {

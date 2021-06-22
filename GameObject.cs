@@ -11,7 +11,7 @@ namespace NiklasGame
     public class Timer
     {
         public int Duration;
-        public int? Added;
+        public double? Added;
         public bool IsDone;
         public Func<int, bool> Action;
         public int Count { get; set; }
@@ -54,18 +54,26 @@ namespace NiklasGame
 
         public virtual void Update(GameTime gameTime)
         {
-            Position += Direction * Speed * (float)gameTime.ElapsedGameTime.Milliseconds;
+            Position += Direction * Speed * (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             HandleAnimations(gameTime);
-            var ms = gameTime.TotalGameTime.Milliseconds;
+            HandleTimers(gameTime);
+        }
+
+        private void HandleTimers(GameTime gameTime)
+        {
+            var ms = gameTime.TotalGameTime.TotalMilliseconds;
             foreach (var timer in Timers)
             {
+                if (timer.IsDone)
+                    continue;
+                
                 if (!timer.Added.HasValue)
                 {
                     timer.Added = ms;
                 }
                 else
                 {
-                    var count = (timer.Added.Value - ms) / timer.Duration;
+                    var count = (int)((ms-timer.Added.Value) / timer.Duration);
                     if (count > timer.Count)
                     {
                         timer.IsDone = timer.Action(count);
