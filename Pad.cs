@@ -42,9 +42,25 @@ namespace NiklasGame
         {
             UpdateBounds();
             GetDirectionInput(gameTime);
-            var hh = Bounds.Height / 2;
-            Position.ClampY(hh, Game1.ViewPortBounds.Height - hh);
+            
+            
             base.Update(gameTime);
+            HandleOutOfBounds(GetWorldBounds());
+
+        }
+
+        private void HandleOutOfBounds(Rectangle rect)
+        {
+            if (rect.Top < 0)
+            {
+                Direction.Y = -Direction.Y*0.5f;
+                Position.Y = rect.Height/2f;
+            }
+            else if (rect.Bottom > Game1.ViewPortBounds.Height)
+            {
+                Direction.Y = -Direction.Y*0.5f;
+                Position.Y = Game1.ViewPortBounds.Height-(rect.Height/2f);
+            }
         }
 
         private void UpdateBounds()
@@ -55,7 +71,7 @@ namespace NiklasGame
                 powerupSize += PowerupSize * Math.Sin(animation.Position * Math.PI);
             }
 
-            additionalHeight = (int) powerupSize;
+            additionalHeight = (int)powerupSize;
 
             if (additionalHeight != 0)
             {
@@ -63,8 +79,9 @@ namespace NiklasGame
             }
         }
 
-        public override Rectangle GetWorldBounds() => Bounds.WithPosition(Position, 0, (int) (-additionalHeight / 2d));
+        public override Rectangle GetWorldBounds() => Bounds.WithPosition(Position, 0, (int)(-additionalHeight / 2d));
 
+        private const float KeySpeedStep = 0.02f;
         private void GetDirectionInput(GameTime gameTime)
         {
             var keyBoardState = Keyboard.GetState();
@@ -72,19 +89,19 @@ namespace NiklasGame
 
             if (keyBoardState.IsKeyDown(KeyUp))
             {
-                Direction.Y -= 0.01f;
+                Direction.Y -= KeySpeedStep;
                 keyWasDown = true;
             }
 
             if (keyBoardState.IsKeyDown(KeyDown))
             {
-                Direction.Y += 0.01f;
+                Direction.Y += KeySpeedStep;
                 keyWasDown = true;
             }
 
             if (keyWasDown == false)
             {
-                Direction *= 0.99f;
+                Direction *= 0.98f;
             }
         }
 
@@ -96,20 +113,16 @@ namespace NiklasGame
 
         public override void OnCollision(GameObject collidesWith)
         {
-            if (collidesWith is Edge edge)
-            {
-                switch (edge.EdgeSide)
-                {
-                    case Edge.Side.Top:
-                        Direction.Y = -Direction.Y * 0.8f;
-
-                        break;
-                    case Edge.Side.Bottom:
-                        Direction.Y = -Direction.Y * 0.8f;
-
-                        break;
-                }
-            }
+            // if (collidesWith is Edge edge)
+            // {
+            //     switch (edge.EdgeSide)dot
+            //     {
+            //         case Edge.Side.Top:
+            //         case Edge.Side.Bottom:
+            //             Direction.Y = 0;
+            //             break;
+            //     }
+            // }
         }
     }
 }

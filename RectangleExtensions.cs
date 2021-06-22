@@ -20,15 +20,17 @@ namespace NiklasGame
     
     public static class RectangleExtensions
     {
-        public static Vector2 ClampY(this Vector2 vector2, float min, float max)
+        public static Vector2 ClampY(this Vector2 vector2, float min, float max, Action onToggle = null)
         {
             if (vector2.Y < min)
             {
                 vector2.Y = min;
+                onToggle?.Invoke();
             }
             else if (vector2.Y > max)
             {
                 vector2.Y = max;
+                onToggle?.Invoke();
             }
 
             return vector2;
