@@ -17,17 +17,11 @@ namespace NiklasGame
         {
             GraphicsDeviceManager = new GraphicsDeviceManager(this);
            
-            
-           
-          
             Content.RootDirectory = "Content";
         }
 
         protected override void Initialize()
-        {   GraphicsDeviceManager.PreferredBackBufferHeight = 2160;
-                      GraphicsDeviceManager.PreferredBackBufferWidth = 3840; 
-                      GraphicsDeviceManager.IsFullScreen = true;
-                     GraphicsDeviceManager.ApplyChanges();
+        {   
             entityManager = new EntityManager(Content);
             var vp = GraphicsDeviceManager.GraphicsDevice.Viewport.Bounds;
             scoreboard = new Scoreboard()
