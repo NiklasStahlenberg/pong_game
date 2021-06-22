@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace NiklasGame
@@ -16,8 +17,23 @@ namespace NiklasGame
             return texture;
         }
     }
+    
     public static class RectangleExtensions
     {
+        public static Vector2 ClampY(this Vector2 vector2, float min, float max)
+        {
+            if (vector2.Y < min)
+            {
+                vector2.Y = min;
+            }
+            else if (vector2.Y > max)
+            {
+                vector2.Y = max;
+            }
+
+            return vector2;
+        }
+        
         public static Rectangle WithPosition(this Rectangle rect, Vector2 position)
         {
             return new Rectangle((int)(rect.X + position.X), (int)(rect.Y + position.Y), rect.Width, rect.Height);

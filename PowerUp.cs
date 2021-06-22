@@ -32,9 +32,8 @@ namespace NiklasGame
         {
             if (collidesWith is Pad pup)
             {
-                var afterPowerUpEnds = pup.IncreaseSize();
+                pup.IncreaseSize();
                 MarkForDeletion();
-                Task.Delay(5000).ContinueWith((_) => afterPowerUpEnds());
             }
             base.OnCollision(collidesWith);
         }

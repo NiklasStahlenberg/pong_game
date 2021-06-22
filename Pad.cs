@@ -10,16 +10,31 @@ namespace NiklasGame
         public Keys KeyUp { get; set; } = Keys.W;
         public Keys KeyDown { get; set; } = Keys.S;
 
-        private const int initialHeight = 100;
+        public float RestitutionCoefficient { get; internal set; }
+
+        private const int InitialHeight = 100;
+        private int additionalHeight = 0;
+
+        private const float PowerupSize = 15;
 
         public Pad()
         {
-            Bounds = new Rectangle(-5, -initialHeight / 2, 10, initialHeight);
+            Reset();
+        }
+
+        private void Reset()
+        {
+            Bounds = new Rectangle(-5, -InitialHeight / 2, 10, InitialHeight);
+            Animations.Clear();
+            additionalHeight = 0;
+            RestitutionCoefficient = 0.8f;
         }
 
         public override void Initialize()
         {
-            Texture = new Texture2D(Game1.GraphicsDeviceManager.GraphicsDevice, Bounds.Width, Bounds.Height).Fill(Color.White);
+            Texture =
+                new Texture2D(Game1.GraphicsDeviceManager.GraphicsDevice, Bounds.Width, Bounds.Height)
+                    .Fill(Color.White);
         }
 
 
@@ -27,30 +42,31 @@ namespace NiklasGame
         {
             UpdateBounds();
             GetDirectionInput(gameTime);
+            var hh = Bounds.Height / 2;
+            Position.ClampY(hh, Game1.ViewPortBounds.Height - hh);
             base.Update(gameTime);
         }
 
         private void UpdateBounds()
         {
-            double h = 0;
+            double powerupSize = 0;
             foreach (var animation in Animations)
             {
-                h += (pupSize * Math.Sin(animation.Position * Math.PI));
+                powerupSize += PowerupSize * Math.Sin(animation.Position * Math.PI);
             }
 
-            additionalHeight = (int)h;
+            additionalHeight = (int) powerupSize;
 
             if (additionalHeight != 0)
             {
-                Bounds.Height = initialHeight + additionalHeight;
+                Bounds.Height = InitialHeight + additionalHeight;
             }
         }
 
-        public override Rectangle GetWorldBounds() => Bounds.WithPosition(Position, 0, (int)(-additionalHeight / 2d));
+        public override Rectangle GetWorldBounds() => Bounds.WithPosition(Position, 0, (int) (-additionalHeight / 2d));
 
         private void GetDirectionInput(GameTime gameTime)
         {
-            var vp = Game1.ViewPortBounds;
             var keyBoardState = Keyboard.GetState();
             var keyWasDown = false;
 
@@ -70,27 +86,12 @@ namespace NiklasGame
             {
                 Direction *= 0.99f;
             }
-
-            var hh = Bounds.Height / 2;
-            if (Position.Y < hh)
-            {
-                Position.Y = hh;
-            }
-
-            if (Position.Y > vp.Height - hh)
-            {
-                Position.Y = vp.Height - hh;
-            }
         }
 
-        private int additionalHeight = 0;
 
-        private const float pupSize = 15;
-
-        public Action IncreaseSize()
+        public void IncreaseSize()
         {
-            Animate(5000, (_) => { });
-            return () => { };
+            Animate(new EaseAnimation(5000, (_) => { }));
         }
 
         public override void OnCollision(GameObject collidesWith)
@@ -101,11 +102,11 @@ namespace NiklasGame
                 {
                     case Edge.Side.Top:
                         Direction.Y = -Direction.Y * 0.8f;
-                        Position.Y = -Bounds.Top;
+
                         break;
                     case Edge.Side.Bottom:
                         Direction.Y = -Direction.Y * 0.8f;
-                        Position.Y = Game1.GraphicsDeviceManager.GraphicsDevice.Viewport.Height + Bounds.Top;
+
                         break;
                 }
             }
