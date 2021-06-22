@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace NiklasGame
@@ -11,16 +12,16 @@ namespace NiklasGame
         private readonly Scoreboard scoreboard;
         private readonly Vector2 initialPosition;
         private readonly GameObject[] pads;
-        private const float initialSpeed = 3.0f;
+        private const float initialSpeed = 0.25f;
 
         public override void Initialize()
         {
-            Texture = new Texture2D(Game1.GraphicsDeviceManager.GraphicsDevice, Bounds.Width, Bounds.Height);
-            Color[] colorData = new Color[Bounds.Width * Bounds.Height];
-            for (int i = 0; i < Bounds.Width * Bounds.Height; i++)
-                colorData[i] = Color.White;
+           
+        }
 
-            Texture.SetData(colorData);
+        public override void LoadContent(ContentManager content)
+        {
+            Texture = content.Load<Texture2D>("ball");
         }
 
         public Ball(Scoreboard scoreboard, Vector2 initialPosition, params GameObject[] pads)
@@ -65,11 +66,6 @@ namespace NiklasGame
                 Direction.Y += offsetPercentage;
                 Speed *= 1.05f;
             }
-        }
-
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            spriteBatch.Draw(Texture, Position, Color.White);
         }
 
         private void Reset(float x)

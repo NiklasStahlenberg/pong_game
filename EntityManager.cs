@@ -31,6 +31,7 @@ namespace NiklasGame
 
         public void Update(GameTime gameTime)
         {
+            var toDelete = new HashSet<GameObject>();
             foreach (var obj in addList)
             {
                 gameObjects.Add(obj);
@@ -42,6 +43,8 @@ namespace NiklasGame
             foreach (var gameObject in gameObjects)
             {
                 gameObject.Update(gameTime);
+                if (gameObject.ShouldBeDeleted)
+                    toDelete.Add(gameObject);
             }
 
             foreach (var a in gameObjects)
@@ -58,6 +61,11 @@ namespace NiklasGame
                         a.OnCollision(b);
                     }
                 }
+            }
+
+            foreach (var obj in toDelete)
+            {
+                gameObjects.Remove(obj);
             }
         }
 

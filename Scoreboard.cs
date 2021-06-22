@@ -26,7 +26,7 @@ namespace NiklasGame
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            var textToPrint = $"{Player1Score} : {Player2Score}!    {lastGameTime}";
+            var textToPrint = $"{Player1Score} : {Player2Score}";
             var size = spriteFont.MeasureString(textToPrint);
             var position = Position - new Vector2(size.X / 2, size.Y / 2);
             

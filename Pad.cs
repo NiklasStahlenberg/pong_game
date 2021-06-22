@@ -53,6 +53,31 @@ namespace NiklasGame
                 Direction *= 0.99f;
             }
         }
+        
+        private const int pupSize = 10;
+
+        public Action IncreaseSize()
+        {
+            var height = Bounds.Height;
+            Animate( 500, (v) =>
+            {
+                var s = (int)(pupSize * v);
+                Bounds.Y -= s/2;
+                Bounds.Height = height+s;
+            });
+            
+            
+            return () =>
+            {
+                var height2 = Bounds.Height;
+                Animate(500, (v) =>
+                {
+                    var s = (int)(pupSize * v);
+                    Bounds.Y -= s/2;
+                    Bounds.Height = height2 - s;
+                });
+            };
+        }
 
         public override void OnCollision(GameObject collidesWith)
         {
@@ -70,6 +95,7 @@ namespace NiklasGame
                         break;
                 }
             }
+            
         }
     }
 }

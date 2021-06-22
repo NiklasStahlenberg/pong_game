@@ -11,7 +11,11 @@ namespace NiklasGame
         private SpriteBatch spriteBatch;
         private EntityManager entityManager;
         private Scoreboard scoreboard;
+        private float powerupTTL = 1000;
+        public Pad[] Players;
+        
         public static GraphicsDeviceManager GraphicsDeviceManager;
+        
 
         public Game1()
         {
@@ -19,6 +23,8 @@ namespace NiklasGame
            
             Content.RootDirectory = "Content";
         }
+
+        public static Rectangle ViewPortBounds => GraphicsDeviceManager.GraphicsDevice.Viewport.Bounds;
 
         protected override void Initialize()
         {   
@@ -43,6 +49,7 @@ namespace NiklasGame
             };
 
             var ball = new Ball(scoreboard, new Vector2(vp.Width / 2f, vp.Height / 2f), pad1, pad2);
+            Players = new[] {pad1, pad2};
 
             entityManager.Add(pad1, pad2, ball, new Edge(Edge.Side.Top, vp), new Edge(Edge.Side.Bottom, vp),
                 new Edge(Edge.Side.Left, vp), new Edge(Edge.Side.Right, vp), scoreboard);
@@ -69,6 +76,13 @@ namespace NiklasGame
                     Keys.Escape))
                 Exit();
 
+            powerupTTL -= gameTime.ElapsedGameTime.Milliseconds;
+
+            if (powerupTTL < 0)
+            {
+                powerupTTL = 1000;
+                entityManager.Add(new PowerUp(Players));
+            }
             entityManager.Update(gameTime);
 
             base.Update(gameTime);
