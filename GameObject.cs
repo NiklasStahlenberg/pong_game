@@ -8,28 +8,6 @@ using Microsoft.Xna.Framework.Input;
 
 namespace NiklasGame
 {
-    public class Animation
-    {
-        
-        public int TotalMilliseconds;
-        public Action<float> Action;
-        private float current;
-
-        internal bool IsDone;
-
-        public Animation(int ms, Action<float> action)
-        {
-            TotalMilliseconds = ms;
-            Action = action;
-        }
-
-        public void Update(GameTime gameTime)
-        {
-            current += gameTime.ElapsedGameTime.Milliseconds;
-            Action(current / (float)TotalMilliseconds);
-        }
-    }
-
     public class GameObject
     {
         public Vector2 Position;
@@ -37,7 +15,7 @@ namespace NiklasGame
         public Vector2 Direction;
         public Rectangle Bounds;
         internal bool ShouldBeDeleted;
-        internal List<Animation> Animations = new();
+        internal List<IAnimation> Animations = new();
 
         public float Speed { get; set; } = 1;
 
@@ -45,22 +23,25 @@ namespace NiklasGame
         {
         }
 
+        public void Animate(IAnimation animation)
+        {
+            Animations.Add(animation);
+        }
+
         public void Animate(int ms, Action<float> action)
         {
-            Animations.Add(new Animation(ms, action));
+            Animations.Add(new LinearAnimation(ms, action));
         }
 
         public virtual void Update(GameTime gameTime)
         {
-            
-            Position += Direction * Speed * (float) gameTime.ElapsedGameTime.Milliseconds;
+            Position += Direction * Speed * (float)gameTime.ElapsedGameTime.Milliseconds;
             foreach (var animation in Animations)
             {
                 animation.Update(gameTime);
             }
 
             Animations.RemoveAll(d => d.IsDone);
-
         }
 
         public virtual void LoadContent(ContentManager content)
@@ -83,6 +64,6 @@ namespace NiklasGame
             ShouldBeDeleted = true;
         }
 
-        public Rectangle GetWorldBounds() => Bounds.WithPosition(Position);
+        public virtual Rectangle GetWorldBounds() => Bounds.WithPosition(Position);
     }
 }

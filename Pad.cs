@@ -5,34 +5,52 @@ using Microsoft.Xna.Framework.Input;
 
 namespace NiklasGame
 {
-    public class Pad: GameObject
+    public class Pad : GameObject
     {
         public Keys KeyUp { get; set; } = Keys.W;
         public Keys KeyDown { get; set; } = Keys.S;
+
+        private const int initialHeight = 100;
+
         public Pad()
         {
-            Bounds = new Rectangle(-5,-50, 10, 100);
+            Bounds = new Rectangle(-5, -initialHeight / 2, 10, initialHeight);
         }
 
         public override void Initialize()
         {
-            Texture = new Texture2D(Game1.GraphicsDeviceManager.GraphicsDevice, Bounds.Width, Bounds.Height);
-            Color[] colorData = new Color[Bounds.Width * Bounds.Height];
-            for (int i = 0; i < Bounds.Width * Bounds.Height; i++)
-                colorData[i] = Color.White;
-
-            Texture.SetData(colorData);
+            Texture = new Texture2D(Game1.GraphicsDeviceManager.GraphicsDevice, Bounds.Width, Bounds.Height).Fill(Color.White);
         }
 
-      
+
         public override void Update(GameTime gameTime)
         {
-           GetDirectionInput(gameTime);
-           base.Update(gameTime);
+            UpdateBounds();
+            GetDirectionInput(gameTime);
+            base.Update(gameTime);
         }
+
+        private void UpdateBounds()
+        {
+            double h = 0;
+            foreach (var animation in Animations)
+            {
+                h += (pupSize * Math.Sin(animation.Position * Math.PI));
+            }
+
+            additionalHeight = (int)h;
+
+            if (additionalHeight != 0)
+            {
+                Bounds.Height = initialHeight + additionalHeight;
+            }
+        }
+
+        public override Rectangle GetWorldBounds() => Bounds.WithPosition(Position, 0, (int)(-additionalHeight / 2d));
 
         private void GetDirectionInput(GameTime gameTime)
         {
+            var vp = Game1.ViewPortBounds;
             var keyBoardState = Keyboard.GetState();
             var keyWasDown = false;
 
@@ -52,31 +70,27 @@ namespace NiklasGame
             {
                 Direction *= 0.99f;
             }
+
+            var hh = Bounds.Height / 2;
+            if (Position.Y < hh)
+            {
+                Position.Y = hh;
+            }
+
+            if (Position.Y > vp.Height - hh)
+            {
+                Position.Y = vp.Height - hh;
+            }
         }
-        
-        private const int pupSize = 10;
+
+        private int additionalHeight = 0;
+
+        private const float pupSize = 15;
 
         public Action IncreaseSize()
         {
-            var height = Bounds.Height;
-            Animate( 500, (v) =>
-            {
-                var s = (int)(pupSize * v);
-                Bounds.Y -= s/2;
-                Bounds.Height = height+s;
-            });
-            
-            
-            return () =>
-            {
-                var height2 = Bounds.Height;
-                Animate(500, (v) =>
-                {
-                    var s = (int)(pupSize * v);
-                    Bounds.Y -= s/2;
-                    Bounds.Height = height2 - s;
-                });
-            };
+            Animate(5000, (_) => { });
+            return () => { };
         }
 
         public override void OnCollision(GameObject collidesWith)
@@ -95,7 +109,6 @@ namespace NiklasGame
                         break;
                 }
             }
-            
         }
     }
 }
