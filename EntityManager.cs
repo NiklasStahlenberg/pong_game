@@ -7,18 +7,18 @@ namespace NiklasGame
 {
     public class EntityManager
     {
-        private readonly ContentManager content;
-        private List<GameObject> gameObjects = new();
-        private List<GameObject> addList = new();
+        private readonly ContentManager _content;
+        private List<GameObject> _gameObjects = new();
+        private List<GameObject> _addList = new();
 
         public EntityManager(ContentManager content)
         {
-            this.content = content;
+            this._content = content;
         }
 
         public void Add(GameObject gameObject)
         {
-            addList.Add(gameObject);
+            _addList.Add(gameObject);
         }
 
         public void Add(params GameObject[] objects)
@@ -32,24 +32,24 @@ namespace NiklasGame
         public void Update(GameTime gameTime)
         {
             var toDelete = new HashSet<GameObject>();
-            foreach (var obj in addList)
+            foreach (var obj in _addList)
             {
-                gameObjects.Add(obj);
-                obj.LoadContent(content);
+                _gameObjects.Add(obj);
+                obj.LoadContent(_content);
                 obj.Initialize();
             }
-            addList.Clear();
+            _addList.Clear();
             
-            foreach (var gameObject in gameObjects)
+            foreach (var gameObject in _gameObjects)
             {
                 gameObject.Update(gameTime);
                 if (gameObject.ShouldBeDeleted)
                     toDelete.Add(gameObject);
             }
 
-            foreach (var a in gameObjects)
+            foreach (var a in _gameObjects)
             {
-                foreach (var b in gameObjects)
+                foreach (var b in _gameObjects)
                 {
                     if (a == b)
                     {
@@ -65,13 +65,13 @@ namespace NiklasGame
 
             foreach (var obj in toDelete)
             {
-                gameObjects.Remove(obj);
+                _gameObjects.Remove(obj);
             }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            foreach (var obj in gameObjects)
+            foreach (var obj in _gameObjects)
             {
                 obj.Draw(spriteBatch); 
             }

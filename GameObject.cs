@@ -8,28 +8,15 @@ using Microsoft.Xna.Framework.Input;
 
 namespace NiklasGame
 {
-    public class Animation
+    public class Timer
     {
-        
-        public int TotalMilliseconds;
-        public Action<float> Action;
-        private float current;
-
-        internal bool IsDone;
-
-        public Animation(int ms, Action<float> action)
-        {
-            TotalMilliseconds = ms;
-            Action = action;
-        }
-
-        public void Update(GameTime gameTime)
-        {
-            current += gameTime.ElapsedGameTime.Milliseconds;
-            Action(current / (float)TotalMilliseconds);
-        }
+        public int Duration;
+        public double? Added;
+        public bool IsDone;
+        public Func<int, bool> Action;
+        public int Count { get; set; }
     }
-
+    
     public class GameObject
     {
         public Vector2 Position;
@@ -37,30 +24,76 @@ namespace NiklasGame
         public Vector2 Direction;
         public Rectangle Bounds;
         internal bool ShouldBeDeleted;
-        internal List<Animation> Animations = new();
-
+        internal List<IAnimation> Animations = new();
+        internal List<Timer> Timers = new();
         public float Speed { get; set; } = 1;
 
         public virtual void Initialize()
         {
         }
 
+        public void Animate(IAnimation animation)
+        {
+            Animations.Add(animation);
+        }
+
         public void Animate(int ms, Action<float> action)
         {
-            Animations.Add(new Animation(ms, action));
+            Animations.Add(new LinearAnimation(ms, action));
+        }
+
+        public void AddTimer(int ms, Func<int,bool> onFire)
+        {
+            Timers.Add(new Timer()
+            {
+                Duration = ms,
+                Count = 0,
+                Action = onFire
+            });
         }
 
         public virtual void Update(GameTime gameTime)
         {
-            
-            Position += Direction * Speed * (float) gameTime.ElapsedGameTime.Milliseconds;
+            Position += Direction * Speed * (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            HandleAnimations(gameTime);
+            HandleTimers(gameTime);
+        }
+
+        private void HandleTimers(GameTime gameTime)
+        {
+            var ms = gameTime.TotalGameTime.TotalMilliseconds;
+            foreach (var timer in Timers)
+            {
+                if (timer.IsDone)
+                    continue;
+                
+                if (!timer.Added.HasValue)
+                {
+                    timer.Added = ms;
+                }
+                else
+                {
+                    var count = (int)((ms-timer.Added.Value) / timer.Duration);
+                    if (count > timer.Count)
+                    {
+                        timer.IsDone = timer.Action(count);
+                    }
+
+                    timer.Count = count;
+                }
+            }
+
+            Timers.RemoveAll(d => d.IsDone);
+        }
+
+        private void HandleAnimations(GameTime gameTime)
+        {
             foreach (var animation in Animations)
             {
                 animation.Update(gameTime);
             }
 
             Animations.RemoveAll(d => d.IsDone);
-
         }
 
         public virtual void LoadContent(ContentManager content)
@@ -83,6 +116,6 @@ namespace NiklasGame
             ShouldBeDeleted = true;
         }
 
-        public Rectangle GetWorldBounds() => Bounds.WithPosition(Position);
+        public virtual Rectangle GetWorldBounds() => Bounds.WithPosition(Position);
     }
 }

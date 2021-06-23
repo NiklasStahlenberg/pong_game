@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -8,66 +9,68 @@ namespace NiklasGame
 {
     public class Game1 : Game
     {
-        private SpriteBatch spriteBatch;
-        private EntityManager entityManager;
-        private Scoreboard scoreboard;
-        private float powerupTTL = 1000;
-        public Pad[] Players;
-        
+        private SpriteBatch _spriteBatch;
+        private EntityManager _entityManager;
+        private Scoreboard _scoreboard;
+        private float _powerupTtl = 1000;
+        public GameObject[] Players;
+
         public static GraphicsDeviceManager GraphicsDeviceManager;
-        
+
 
         public Game1()
         {
             GraphicsDeviceManager = new GraphicsDeviceManager(this);
-           
+
             Content.RootDirectory = "Content";
         }
 
         public static Rectangle ViewPortBounds => GraphicsDeviceManager.GraphicsDevice.Viewport.Bounds;
 
         protected override void Initialize()
-        {   
-            entityManager = new EntityManager(Content);
+        {
+            _entityManager = new EntityManager(Content);
             var vp = GraphicsDeviceManager.GraphicsDevice.Viewport.Bounds;
-            scoreboard = new Scoreboard()
+            _scoreboard = new Scoreboard()
             {
                 Position = new Vector2(vp.Width / 2f, 50)
             };
             var playerY = (vp.Height / 2);
 
-            var pad1 = new Pad()
+            Players = new GameObject[]
             {
-                Position = new Vector2(25, playerY)
+                new Pad()
+                {
+                    Position = new Vector2(25, playerY)
+                },
+                new Pad()
+                {
+                    KeyUp = Keys.Up,
+                    KeyDown = Keys.Down,
+                    Position = new Vector2(vp.Width - 25, playerY)
+                }
             };
 
-            var pad2 = new Pad()
-            {
-                KeyUp = Keys.Up,
-                KeyDown = Keys.Down,
-                Position = new Vector2(vp.Width - 25, playerY)
-            };
+            var ball = new Ball(_scoreboard, new Vector2(vp.Width / 2f, vp.Height / 2f));
 
-            var ball = new Ball(scoreboard, new Vector2(vp.Width / 2f, vp.Height / 2f), pad1, pad2);
-            Players = new[] {pad1, pad2};
-
-            entityManager.Add(pad1, pad2, ball, new Edge(Edge.Side.Top, vp), new Edge(Edge.Side.Bottom, vp),
-                new Edge(Edge.Side.Left, vp), new Edge(Edge.Side.Right, vp), scoreboard);
-
+            _entityManager.Add(Players);
+            _entityManager.Add( ball, _scoreboard);
+            _entityManager.Add(new Edge(Edge.Side.Top, vp), new Edge(Edge.Side.Bottom, vp),
+                new Edge(Edge.Side.Left, vp), new Edge(Edge.Side.Right, vp));
             base.Initialize();
         }
 
-        //todo: Momentum to vector, Pads vector.Y, ball both, bounds.intersect, collision on roof etc,  
-
-
         protected override void LoadContent()
         {
-            spriteBatch = new SpriteBatch(GraphicsDeviceManager.GraphicsDevice);
+            _spriteBatch = new SpriteBatch(GraphicsDeviceManager.GraphicsDevice);
         }
 
         protected override void UnloadContent()
         {
         }
+
+        private void PupPower(Pad pad) => pad.MorePower();
+        private void PupSize(Pad pad) => pad.IncreaseSize();
 
         protected override void Update(GameTime gameTime)
         {
@@ -76,14 +79,18 @@ namespace NiklasGame
                     Keys.Escape))
                 Exit();
 
-            powerupTTL -= gameTime.ElapsedGameTime.Milliseconds;
+            _powerupTtl -= gameTime.ElapsedGameTime.Milliseconds;
 
-            if (powerupTTL < 0)
+            if (_powerupTtl < 1 && Players != null)
             {
-                powerupTTL = 1000;
-                entityManager.Add(new PowerUp(Players));
+                _powerupTtl = 1000;
+                Action<Pad> action = gameTime.ElapsedGameTime.Milliseconds % 2 == 0
+                    ? PupPower
+                    : PupSize;
+                _entityManager.Add(new PowerUp(action,Players));
             }
-            entityManager.Update(gameTime);
+
+            _entityManager.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -93,9 +100,9 @@ namespace NiklasGame
         {
             GraphicsDeviceManager.GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            spriteBatch.Begin();
-            entityManager.Draw(spriteBatch);
-            spriteBatch.End();
+            _spriteBatch.Begin();
+            _entityManager.Draw(_spriteBatch);
+            _spriteBatch.End();
             base.Draw(gameTime);
         }
     }

@@ -7,30 +7,30 @@ namespace NiklasGame
 {
     public class Scoreboard: GameObject
     {
-        private SpriteFont spriteFont;
+        private SpriteFont _spriteFont;
         public int Player1Score { get; set; }
         public int Player2Score { get; set; }
 
-        public float lastGameTime;
+        public float LastGameTime;
 
         public override void LoadContent(ContentManager content)
         {
-            spriteFont = content.Load<SpriteFont>("HUD");
+            _spriteFont = content.Load<SpriteFont>("HUD");
         }
 
         public override void Update(GameTime gameTime)
         {
-            lastGameTime = gameTime.ElapsedGameTime.Milliseconds;
+            LastGameTime = gameTime.ElapsedGameTime.Milliseconds;
             base.Update(gameTime);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             var textToPrint = $"{Player1Score} : {Player2Score}";
-            var size = spriteFont.MeasureString(textToPrint);
+            var size = _spriteFont.MeasureString(textToPrint);
             var position = Position - new Vector2(size.X / 2, size.Y / 2);
             
-            spriteBatch.DrawString(spriteFont, textToPrint, position, Color.Black);
+            spriteBatch.DrawString(_spriteFont, textToPrint, position, Color.Black);
         }
 
         public void IncreasePlayerScore(Edge.Side side)
